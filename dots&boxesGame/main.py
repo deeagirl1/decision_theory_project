@@ -177,7 +177,7 @@ class FullGridLoaded:
             str_ += '    {:}'.format(i + 1)
         str_ += '\n'
         for j in range(self.__grid_height * 2):
-            if j % 2 == 0:
+            if j % 2 == 1:
                 str_ += '{:} '.format(j // 2 + 1)
             else:
                 str_ += "  "

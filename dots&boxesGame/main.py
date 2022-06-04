@@ -1,302 +1,412 @@
-class BaseGrid:
-    LEFT = 0
-    UP = 1
-    RIGHT = 2
-    DOWN = 3
+import random
+import getpass
+import datetime
 
-    def __init__(self):
-        self.__user, self.__left_side, self.__right_side, self.__up_side, self.__down_side = None, False, False, False, False
 
-    def get_user(self):
-        return self.__user
+nothing = input("Game is ready to start : press Enter to play......")
 
-    def add_user(self, user):
-        self.__user = user
+# ----------------------------------------------Collecting Informations---------------------------------------------------------------------
 
-    def has_line_on_side(self, side):
-        if side == self.LEFT:
-            if self.__left_side:
-                return True
-        if side == self.UP:
-            if self.__up_side:
-                return True
-        if side == self.RIGHT:
-            if self.__right_side:
-                return True
-        if side == self.DOWN:
-            if self.__down_side:
-                return True
+
+n = input("\nEnter the box length ( 2..9 ) : ")  # getting the box length from user
+try:
+    n = int(n)
+    while n < 2 or n > 9:
+        print("\nPlease enter a number between 2 and 9...")
+        n = int(input("Enter the box length ( 2..9 ) : "))
+except:
+    print("\nPlease Enter a number...Next time you will not get a chance again!")
+    while n < 2 or n > 9:
+        print("\nPlease enter a number between 2 and 9...\n")
+        n = int(input("Enter the box length ( 2..9 ) : "))
+
+hor_links = [False] * (n * (n + 1))  # Defining horizontal link connections(now all False)
+ver_links = [False] * (n * (n + 1))  # Defining vertical link connections(now all False)
+owners = [' '] * (n ** 2)  # defining the owners of created boxes(now blank)
+alphabets = list('abcdefghijklmnopqrstuvwxyz')[0:(n + 1)]
+numbers = list('0123456789')[0:(n + 1)]
+dots = []  # List for points ID
+for num in numbers:
+    for i in alphabets:
+        dots.append(i + num)
+# score definition
+score1 = 0
+score2 = 0
+# selection of second Player
+ask = input("\nDo you want to play with computer? ( y / n ) :")
+# Player name selection
+if ask == 'y' or ask == 'Y':
+    player1 = 'P'
+    player2 = 'C'
+else:
+    player1 = '1'
+    player2 = '2'
+
+player = player1
+
+print("\n__________________________________GAME STARTS___________________________________\n")
+
+
+# -------------------------------------------------Function definitions for duel play----------------------------------------------------
+
+# function for checking if two points are joined or not
+def is_linked(pos1, pos2, hor_links, ver_links):
+    if pos1 > pos2:
+        pos1, pos2 = pos2, pos1
+    if (pos1 + 1) % (n + 1) == 0 and pos2 % (n + 1) == 0:
+        return False
+    if pos2 - pos1 == n + 1:
+        return ver_links[pos1]
+    elif pos2 - pos1 == 1:
+        return hor_links[pos1 - ((pos1 + 1) // (n + 1))]
+    else:
         return False
 
-    def add_line(self, side):
-        if not self.has_line_on_side(side):
-            if side == self.LEFT:
-                self.__left_side = True
-                return True
-            if side == self.UP:
-                self.__up_side = True
-                return True
-            if side == self.RIGHT:
-                self.__right_side = True
-                return True
-            if side == self.DOWN:
-                self.__down_side = True
-                return True
-        return False
 
-    def four_lines_placed(self):
-        if self.has_line_on_side(self.LEFT) and self.has_line_on_side(self.UP) and self.has_line_on_side(
-                self.RIGHT) and self.has_line_on_side(self.DOWN):
-            return True
-        return False
+# part of the following printer function : Helps in same line printing
+def part_print(new_text, end=""):
+    global prev_text
+    prev_text = prev_text + new_text
+    if end == "\n":
+        print(prev_text)
+        prev_text = ""
+    else:
+        prev_text = prev_text + end
 
 
-##############################################################################
-class FullGridLoaded:
-    user1 = "A"
-    user2 = "B"
-    DRAW = "draw"
+# Prints the dots and links and scores in a user friendly manner
+def printer(hor_links, ver_links, owners):
+    new_hor_links = []
+    for i in hor_links:
+        if i:
+            new_hor_links.append('___')
+        else:
+            new_hor_links.append('   ')
+    new_ver_links = []
+    for i in ver_links:
+        if i == True:
+            new_ver_links.append('|   ')
+        else:
+            new_ver_links.append('    ')
+    char = '+'
+    hor_index = 0
+    ver_index = 0
+    owner_index = 0
+    row_index = 0
+    print('-' * (((n + 1) * 4) + 8) + '\n')
+    print("    a   b   c   d   e   f   g   h   i   j   "[0:((n + 1) * 4) + 1] + '\n')
+    while True:
+        print(" " + str(row_index) + ' ', end=' ')
+        for i in range(n):
+            part_print(char, "")
+            part_print(new_hor_links[hor_index], "")
+            hor_index += 1
+        part_print(char, "\n")
+        row_index += 1
+        if (hor_index) == len(new_hor_links):
+            break
+        print("   ", end=' ')
+        for i in range(n + 1):
+            part_print(new_ver_links[ver_index], "")
+            ver_index += 1
+        part_print("", "\n")
+        ver_index -= (n + 1)
+        print("   ", end=' ')
+        for i in range(n):
+            if ver_links[ver_index]:
+                part_print("| " + owners[owner_index] + " ", "")
+            else:
+                part_print("  " + owners[owner_index] + " ", "")
+            owner_index += 1
+            ver_index += 1
+        if ver_links[ver_index]:
+            part_print("|", "\n")
+        else:
+            part_print(" ", "\n")
+        ver_index += 1
+    print('\n\n' + '-' * (((n + 1) * 4) + 8))
+    print("\nscore of player one (", player1, ") : " + str(score1))
+    print("score of player two (", player2, ") : " + str(score2))
 
-    def __init__(self, grid_width, grid_height, user_name_1, user_name_2):
-        self.__grid_width, self.__grid_height, self.__user_name_1, self.__user_name_2 = grid_width, grid_height, user_name_1, user_name_2
-        self.__grid = self.create_grid()
 
-    def create_grid(self):
-        return [[BaseGrid() for _ in range(self.__grid_width)] for _ in range(self.__grid_height)]
-
-    def adding_owner_name_if_four_line(self, obj_, user):
-        if user == self.__user_name_1:
-            obj_.add_user(self.user1)
-        elif user == self.__user_name_2:
-            obj_.add_user(self.user2)
-
-    def add_line(self, x, y, side, user):
-        bool_value_1, bool_value_2 = False, False
-        if self.__grid[x - 1][y - 1].add_line(side):
-            bool_value_1 = True
-            self.update_neighbour_of_box(x - 1, y - 1, side)
-            if self.__grid[x - 1][y - 1].four_lines_placed():
-                self.adding_owner_name_if_four_line(self.__grid[x - 1][y - 1], user)
-                bool_value_2 = True
-        return bool_value_1, bool_value_2
-
-    def update_neighbour_of_box(self, row_index, column_index, side):
-        if self.get_neighbour_on_side(side, row_index - 1, column_index - 1) is not None:
-            self.get_neighbour_on_side(side, row_index - 1, column_index - 1).add_line((side + 2) % 4)
-
-    def IndexError_raiser(self, row_of_neigh, column_of_neigh):
-        if row_of_neigh < 1 or column_of_neigh < 1:
-            raise IndexError
-
-    def get_neighbour_on_side(self, side, row, column):
-        try:
-            if side == 0:
-                self.IndexError_raiser(row, column - 1)
-                return self.__grid[row - 1][column - 2]
-            if side == 1:
-                self.IndexError_raiser(row - 1, column)
-                return self.__grid[row - 2][column - 1]
-            if side == 2:
-                return self.__grid[row - 2][column - 1]
-            if side == 3:
-                return self.__grid[row - 1][column - 2]
-        except IndexError:
-            return None
-
-    def total_point_of_user(self, user):
-        tot_a, tot_b = 0, 0
-        for i in range(len(self.__grid)):
-            for j in range(len(self.__grid[0])):
-                if self.__grid[i][j].get_user() == self.user1:
-                    tot_a += 1
-                elif self.__grid[i][j].get_user() == self.user2:
-                    tot_b += 1
-        if user == self.user1:
-            return tot_a
-        if user == self.user2:
-            return tot_b
-
-    def is_ended(self):
-        list_ = []
-        for i in range(len(self.__grid)):
-            for j in range(len(self.__grid[0])):
-                if not self.__grid[i][j].four_lines_placed():
-                    list_.append(False)
-                else:
-                    list_.append(True)
-        if False in list_:
+# Checks if the given four points are joined correctly so that a box is formed
+def is_box_completed(pos1, pos2, pos3, pos4, hor_links, ver_links):
+    all = [pos1, pos2, pos3, pos4]
+    all.sort()
+    for i in all:
+        if i < 0 or i > (((n + 1) ** 2) - 1):
             return False
+    if (is_linked(all[0], all[1], hor_links, ver_links) and is_linked(all[2], all[3], hor_links, ver_links)) and (
+            is_linked(all[0], all[2], hor_links, ver_links) and is_linked(all[1], all[3], hor_links, ver_links)):
         return True
-
-    def winner(self):
-        if self.total_point_of_user(self.user1) > self.total_point_of_user(self.user2):
-            return self.user1
-        elif self.total_point_of_user(self.user1) < self.total_point_of_user(self.user2):
-            return self.user2
-        else:
-            return self.DRAW
-
-    def print_score(self):
-        str_ = '\n'
-        str_ += 'Score:\n\n'
-        n1 = self.__user_name_1 + ' (' + self.user1 + ')'
-        n2 = self.__user_name_2 + ' (' + self.user1 + ')'
-        str_ += '{:15s} | {:15s}'.format(n1, n2)
-        str_ += '\n' + '-' * 37
-        str_ += '\n{:<15d} | {:<15d}\n'.format(int(self.total_point_of_user(self.user1)),
-                                               int(self.total_point_of_user(self.user2)))
-        return str_
-
-    def one_horizontal_line_in_grid(self, index_of_row):  # not working
-        str_ = '  '
-        print(index_of_row)
-        for cell in self.__grid[index_of_row // 2]:
-            if index_of_row % 2 == 0:
-                str_ += 'o'
-                if cell.has_line_on_side(1):
-                    str_ += ' —— '
-                else:
-                    str_ += '    '
-            else:
-                if cell.has_line_on_side(0):
-                    str_ += '| '
-                    if cell.four_lines_placed():
-                        str_ += ' {:}  '.format(cell.get_user())
-                    else:
-                        str_ += '   '
-                else:
-                    str_ += '     '
-        if index_of_row % 2 == 0:
-            str_ += 'o'
-        str_ += '\n'
-        return str_
-
-    def __str__(self):  # not working because of one_horizontal_line_in_grid
-        str_ = '  '
-        for i in range(self.__grid_width):
-            str_ += '    {:}'.format(i + 1)
-        str_ += '\n'
-        for j in range(self.__grid_height * 2):
-            if j % 2 == 1:
-                str_ += '{:} '.format(j // 2 + 1)
-            else:
-                str_ += "  "
-            str_ += self.one_horizontal_line_in_grid(j)
-        str_ += self.print_score()
-
-        return str_
+    else:
+        return False
 
 
-##############################################################################
-# main program
-##############################################################################
-def ask_int():
-    while True:
+# checks if the given points are joined and returns a list of topmost left points of the box created .
+# if no box is formed, returns [].
+# raises error if the points cannot be joined !
+def create_link(pos1, pos2, hor_links, ver_links):
+    e = Exception("Error")
+    if is_linked(pos1, pos2, hor_links, ver_links):
+        raise RuntimeError("already present")
+    if pos1 > pos2:
+        pos1, pos2 = pos2, pos1
+    if (pos1 + 1) % (n + 1) == 0 and pos2 % (n + 1) == 0:
+        raise e
+    if pos2 - pos1 == n + 1:
+        ver_links[pos1] = True
+        box_id = []
+        check = is_box_completed(pos1, pos2, pos1 - 1, pos2 - 1, hor_links, ver_links)
+        if check:
+            box_id.append(pos1 - 1)
+        check = is_box_completed(pos1, pos2, pos1 + 1, pos2 + 1, hor_links, ver_links)
+        if check:
+            box_id.append(pos1)
+        return box_id
+    elif pos2 - pos1 == 1:
+        hor_links[pos1 - ((pos1 + 1) // (n + 1))] = True
+        box_id = []
+        check = is_box_completed(pos1, pos2, pos1 - (n + 1), pos2 - (n + 1), hor_links, ver_links)
+        if check:
+            box_id.append(pos1 - (n + 1))
+        check = is_box_completed(pos1, pos2, pos1 + (n + 1), pos2 + (n + 1), hor_links, ver_links)
+        if check:
+            box_id.append(pos1)
+        return box_id
+    else:
+        raise e
+
+
+# removes a link from the given points by making the joining index False in the hor_links or ver_links
+# does nothing if the link is absent
+def remove_link(pos1, pos2, hor_links, ver_links):
+    e = Exception("Error")
+    if pos1 > pos2:
+        pos1, pos2 = pos2, pos1
+    if (pos1 + 1) % (n + 1) == 0 and pos2 % (n + 1) == 0:
+        raise e
+    if (pos2 - pos1) == n + 1:
+        ver_links[pos1] = False
+    elif (pos2 - pos1) == 1:
+        hor_links[pos1 - ((pos1 + 1) // (n + 1))] = False
+    else:
+        raise e
+
+
+# receives the corner(left topmost point of the box) value and changes its ownership to player name
+def change_owner(corner, owners, player):
+    if corner != []:
+        owners[corner - ((corner + 1) // (n + 1))] = player
+        return True
+    else:
+        return False
+
+
+# reverses the current player
+def change_player():
+    global player
+    if player == player1:
+        player = player2
+    else:
+        player = player1
+
+
+# ---------------------------------------------------Function definition for Computer player----------------------------------------
+
+# joins every links and checks if a box is created, if not : Deletes the link , else: Keeps it
+def comp_complete_box(virtual_hor_links, virtual_ver_links):
+    link_joined = []
+    box_count = 0
+    for i in range((n + 1) ** 2):
         try:
-            integer = int(input())
-            return integer
-        except ValueError:
-            print("Invalid integer! Enter an integer again:")
-
-
-def ask_direction():
-    print("Enter the side of the box to place the line.")
-    while True:
-        print("Use the following letters: l, r, u, d")
-        print("(l = LEFT, r = RIGHT, u = UP, d = DOWN):")
-        letter = input()
-        if letter.lower() == 'l':
-            return BaseGrid.LEFT
-        elif letter.lower() == 'u':
-            return BaseGrid.UP
-        elif letter.lower() == 'r':
-            return BaseGrid.RIGHT
-        elif letter.lower() == 'd':
-            return BaseGrid.DOWN
-        else:
-            print("Wrong input.")
-
-
-def ask_coordinates(max_row, max_column):
-    while True:
-        print("Enter the coordinates separated by comma (row,column):")
-        coord_string = input()
-        parts = coord_string.split(",")
+            flag = create_link(i, i + 1, virtual_hor_links, virtual_ver_links)
+            if flag == []:
+                remove_link(i, i + 1, virtual_hor_links, virtual_ver_links)
+            else:
+                link_joined.append((i, i + 1))
+            box_count += len(flag)
+        except:
+            pass
         try:
-            row = int(parts[0])
-            column = int(parts[1])
-            while row > max_row or row < 1 or column > max_column or column < 1:
-                print("Coordinates are out of range.")
-                print(
-                    "A horizontal coordinate is between 1 and {:d}, and a vertical coordinate is between 1 and {:d}.".format(
-                        max_row, max_column))
-                print("Enter the coordinates separated by comma (row,column):")
-                coord_string = input()
-                parts = coord_string.split(",")
-                row = int(parts[0])
-                column = int(parts[1])
-            return row, column
-        except ValueError:
-            print("Invalid input!")
-            print("You need to give numbers separated by comma.")
-        except IndexError:
-            print("Invalid input!")
-            print("Separate the coordinates with comma.")
+            flag = create_link(i, i + n + 1, virtual_hor_links, virtual_ver_links)
+            if flag == []:
+                remove_link(i, i + n + 1, virtual_hor_links, virtual_ver_links)
+            else:
+                link_joined.append((i, i + n + 1))
+            box_count += len(flag)
+        except:
+            pass
+    return link_joined, box_count, virtual_hor_links, virtual_ver_links
+
+
+# calls the comp_complete_box untill the is a slightest chance of gaining a box
+def comp_try_box(hor_links, ver_links):
+    virtual_hor_links = list(hor_links)
+    virtual_ver_links = list(ver_links)
+    link_joined = []
+    box_count = 0
+    while True:
+        prev_length = box_count
+        new_links, count, virtual_hor_links, virtual_ver_links = comp_complete_box(virtual_hor_links, virtual_ver_links)
+        link_joined = link_joined + new_links
+        box_count += count
+        if box_count == prev_length:
+            break
+    return link_joined, box_count, virtual_hor_links, virtual_ver_links
+
+
+# final Turns generater!
+# comes into play when all chances of gaining a box is gone!
+# joins all not joined lines one by one and counts the posibility of gaining a box by the oppernent, then remove the joining
+# the least box gaining possibility is selected
+# takes a random chance from the least possibilities and appends to the link_joined list ,hence generates the final turn chances
+def get_comp_turns(link_joined, virtual_hor_links, virtual_ver_links):
+    if (False not in virtual_hor_links) and (False not in virtual_ver_links):
+        least_gainable_box_count = 0
+    else:
+        least_gainable_box_count = (n + 1) ** 2
+    link_available = []
+    count = 0
+    for link in virtual_hor_links:
+        if link == False:
+            virtual_hor_links[count] = True
+            new_link, new_count, H, V = comp_try_box(virtual_hor_links, virtual_ver_links)
+            for link in new_link:
+                remove_link(link[0], link[1], virtual_hor_links, virtual_ver_links)
+            if new_count < least_gainable_box_count:
+                least_gainable_box_count = new_count
+                link_available = []
+                link_available.append(((count // n) + count, (count // n) + (count + 1)))
+            elif new_count == least_gainable_box_count:
+                link_available.append(((count // n) + count, (count // n) + (count + 1)))
+            virtual_hor_links[count] = False
+        count += 1
+    count = 0
+    for link in virtual_ver_links:
+        if link == False:
+            virtual_ver_links[count] = True
+            new_link, new_count, H, V = comp_try_box(virtual_hor_links, virtual_ver_links)
+            for link in new_link:
+                remove_link(link[0], link[1], virtual_hor_links, virtual_ver_links)
+            if new_count < least_gainable_box_count:
+                least_gainable_box_count = new_count
+                link_available = []
+                link_available.append((count, count + n + 1))
+            elif new_count == least_gainable_box_count:
+                link_available.append((count, count + n + 1))
+            virtual_ver_links[count] = False
+        count += 1
+
+    if len(link_joined) >= 3 and least_gainable_box_count >= 2:  # a special winning trick is special cases only!
+        del link_joined[-2]
+        return link_joined
+    else:
+        if link_available != []:
+            link_joined.append(random.choice(link_available))  # general case
+        return link_joined
+
+
+# calls the comp_try_box and get_comp_turns one by one and joins the links(returned from get_comp_turns) and changes the ownership!
+def comp_play(hor_links, ver_links):
+    print("\nTurn for computer...")
+    global owners, score2, dots
+    box_link_list, box_count, new_hor_links, new_ver_links = comp_try_box(hor_links, ver_links)
+    turn_list = get_comp_turns(box_link_list, new_hor_links, new_ver_links)
+    for turn in turn_list:
+        box_id = create_link(turn[0], turn[1], hor_links, ver_links)
+        flag = False
+        for corner in box_id:
+            flag = change_owner(corner, owners, "C")
+            if flag:
+                print("\nComputer owns a score!")
+                score2 += len(box_id)
+        print("\nline created between", dots[turn[0]], "and", dots[turn[1]], '\n')
+        if flag == False:
+            break
+        else:
+            printer(hor_links, ver_links, owners)
+    print("computer has completed its chance(s)!")
+
+
+# -------------------------------------------------------Final game structure---------------------------------------------------
+
+def start_game():
+    global score1, score2
+    start_time = datetime.datetime.now()
+    while ' ' in owners:  # Loop for game coninution
+        print('\n')
+        printer(hor_links, ver_links, owners)  # prints the boxes
+        print("\n")
+        ok = 0
+        # Point input from user
+        point1 = input("Enter the first point for " + player + " : ")
+        point2 = input("Enter the second point for " + player + " : ")
+        try:
+            if point1[-1] == '\r' and point2[-1] == '\r':
+                point1 = point1[0:len(point1) - 1]
+                point2 = point2[0:len(point2) - 1]
+        except:
+            pass
+        dont_change = False  # checks if the the player cotinues the game or the turn will be shifted to another
+        while ok == 0:
+            dont_change = False
+            try:
+                pos1 = dots.index(point1)
+                pos2 = dots.index(point2)
+                box_id = create_link(pos1, pos2, hor_links, ver_links)
+                for corner in box_id:
+                    dont_change = change_owner(corner, owners, player)  # Dont_change changes if box is created
+                print("\nline created between " + point1 + " and " + point2)
+                ok = 1
+            # Checks Errors for wrong point input
+            except RuntimeError:
+                print("\nThe given points are already joined!\n")
+                point1 = input("Enter the first point for " + player + " : ")
+                point2 = input("Enter the second point for " + player + " : ")
+            except ValueError:
+                print("\nThe given points are not found!\n")
+                point1 = input("Enter the first point for " + player + " : ")
+                point2 = input("Enter the second point for " + player + " : ")
+            except:
+                print("\nThe given points cannot be joined!\n")
+                point1 = input("Enter the first point for " + player + " : ")
+                point2 = input("Enter the second point for " + player + " : ")
+
+        if dont_change:  # if true the current player will continue the game
+            if player == 'P' or player == '1':
+                score1 += len(box_id)
+            else:
+                score2 += len(box_id)
+            print("\nPlayer " + player + " owns a point!")
+            if " " not in owners:
+                break
+        else:
+            if player2 == 'C':  # checks if computer will play
+                comp_play(hor_links, ver_links)
+            else:
+                change_player()  # changes the player
+
+    # Actions after game is over
+    print("\nGame over!!\n")
+    printer(hor_links, ver_links, owners)
+    diff = score1 - score2
+    # prints the score difference and the owners name
+    if diff < 0:
+        print("\nPlayer 2" + "(" + player2 + ")" + " has won the match with " + str(abs(diff)) + " points")
+    elif diff > 0:
+        print("\nPlayer 1" + "(" + player1 + ")" + " has won the match with " + str(abs(diff)) + " points")
+    else:
+        print("\nThe game is draw!")
+
+    end_time = datetime.datetime.now()
+    print("\nGame Playing duration :", end=' ')
+    print((end_time - start_time))
+    exitId = input("\nPress Enter to exit : ")  # Pauses the script
 
 
 def main():
-    print("The game begins...")
-    player1 = input("Enter the name of the first player:\n")
-    player2 = input("Enter the name of the second player:\n")
-    print("Enter the width of the grid:")
-    width = ask_int()
-    while width < 1:
-        print("The width has to be at least 1. Enter the width of the grid again:")
-        width = ask_int()
-    print("Enter the height of the grid:")
-    height = ask_int()
-    while height < 1:
-        print("The height has to be at least 1. Enter the height of the grid again:")
-        height = ask_int()
-
-    game = FullGridLoaded(width, height, player1, player2)
-
-    player = player1
-    print(game)
-
-    while not game.is_ended():
-        print("It is {:s}'s turn.".format(player))
-        row, column = ask_coordinates(height, width)
-        direction = ask_direction()
-
-        line_added, point_earned = game.add_line(row, column, direction, player)
-        while not line_added:
-            print("There is already a line here. Give coordinates again.")
-            row, column = ask_coordinates(height, width)
-            direction = ask_direction()
-            line_added, point_earned = game.add_line(row, column, direction, player)
-        print(game)
-
-        if point_earned:
-            if game.is_ended():
-                print("{:s} got a point!".format(player))
-            else:
-                print("{:s} got a point and takes another move!".format(player))
-        else:
-            if player == player1:
-                player = player2
-            else:
-                player = player1
-
-    print("End of the game.")
-    print(game.print_score())
-    winner = game.winner()
-    if winner == FullGridLoaded.DRAW:
-        print("It is a draw.")
-    else:
-        print("The winner is {:s}, congratulations!".format(winner))
+    start_game()  # initiates the game
 
 
 main()
-
-##############################################################################

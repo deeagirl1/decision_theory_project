@@ -1,7 +1,8 @@
 import random
 import getpass
 import datetime
-#------------------------------------------------User Authentification---------------------------------------------------------------------
+
+# ------------------------------------------------User Authentification---------------------------------------------------------------------
 '''print "\n * Copyright \xa9 : Arpan Ghosh *\n"
 print " * This game is created by Arpan Ghosh. \xae All rights reserved .\n"
 print " * Verification : Enter the ",
@@ -13,8 +14,10 @@ else:
     x = raw_input("Press Enter to exit!!")
     exit()'''
 print("\n----------------------------------INSTRUCTIONS--------------------------------- \n")
-print("This game is based upon dots & boxes....By Entering the point ID (e.g. a0,a1,a2,b0,b1,b2......) Identify the points you want to join")
-print("The computer will join the points! Now if you are playing with computer,the next chances will be carried out computer itself....")
+print(
+    "This game is based upon dots & boxes....By Entering the point ID (e.g. a0,a1,a2,b0,b1,b2......) Identify the points you want to join")
+print(
+    "The computer will join the points! Now if you are playing with computer,the next chances will be carried out computer itself....")
 print("Results will be decleared when the game is over ! Have fun with this game !")
 print("\n----------------------------HOW TO PLAY THIS GAME------------------------------ \n")
 print('''
@@ -42,10 +45,10 @@ Enter the first point for 2 : ( Turn for second player )
 print("\n----------------------------------CONFERMATION---------------------------------")
 nothing = input("\n >>> Game is ready to start : press Enter to play......")
 
-#----------------------------------------------Collecting Informations---------------------------------------------------------------------
+# ----------------------------------------------Collecting Informations---------------------------------------------------------------------
 
 prev_text = ""
-n = input("\nEnter the box length ( 2..9 ) : ")#getting the box length from user
+n = input("\nEnter the box length ( 2..9 ) : ")  # getting the box length from user
 try:
     n = int(n)
     while n < 2 or n > 9:
@@ -57,21 +60,21 @@ except:
         print("\nPlease enter a number between 2 and 9...\n")
         n = int(input("Enter the box length ( 2..9 ) : "))
 
-hor_links = [False] * (n * (n + 1))#Defining horizontal link connections(now all False)
-ver_links = [False] * (n * (n + 1))#Defining vertical link connections(now all False)
-owners = [' '] * (n ** 2)#defining the owners of created boxes(now blank)
+hor_links = [False] * (n * (n + 1))  # Defining horizontal link connections(now all False)
+ver_links = [False] * (n * (n + 1))  # Defining vertical link connections(now all False)
+owners = [' '] * (n ** 2)  # defining the owners of created boxes(now blank)
 alphabets = list('abcdefghijklmnopqrstuvwxyz')[0:(n + 1)]
 numbers = list('0123456789')[0:(n + 1)]
-dots = []#List for points ID
+dots = []  # List for points ID
 for num in numbers:
     for i in alphabets:
         dots.append(i + num)
-#score definition
+# score definition
 score1 = 0
 score2 = 0
-#selection of second Player
+# selection of second Player
 ask = input("\nDo you want to play with computer? ( y / n ) :")
-#Player name selection
+# Player name selection
 if ask == 'y' or ask == 'Y':
     player1 = 'P'
     player2 = 'C'
@@ -83,9 +86,10 @@ player = player1
 
 print("\n__________________________________GAME STARTS___________________________________\n")
 
-#-------------------------------------------------Function definitions for duel play----------------------------------------------------
 
-#function for checking if two points are joined or not
+# -------------------------------------------------Function definitions for duel play----------------------------------------------------
+
+# function for checking if two points are joined or not
 def is_linked(pos1, pos2, hor_links, ver_links):
     if pos1 > pos2:
         pos1, pos2 = pos2, pos1
@@ -98,7 +102,8 @@ def is_linked(pos1, pos2, hor_links, ver_links):
     else:
         return False
 
-#part of the following printer function : Helps in same line printing
+
+# part of the following printer function : Helps in same line printing
 def part_print(new_text, end=""):
     global prev_text
     prev_text = prev_text + new_text
@@ -108,7 +113,8 @@ def part_print(new_text, end=""):
     else:
         prev_text = prev_text + end
 
-#Prints the dots and links and scores in a user friendly manner
+
+# Prints the dots and links and scores in a user friendly manner
 def printer(hor_links, ver_links, owners):
     new_hor_links = []
     for i in hor_links:
@@ -162,7 +168,8 @@ def printer(hor_links, ver_links, owners):
     print("\nscore of player one (", player1, ") : " + str(score1))
     print("score of player two (", player2, ") : " + str(score2))
 
-#Checks if the given four points are joined correctly so that a box is formed
+
+# Checks if the given four points are joined correctly so that a box is formed
 def is_box_completed(pos1, pos2, pos3, pos4, hor_links, ver_links):
     all = [pos1, pos2, pos3, pos4]
     all.sort()
@@ -170,14 +177,15 @@ def is_box_completed(pos1, pos2, pos3, pos4, hor_links, ver_links):
         if i < 0 or i > (((n + 1) ** 2) - 1):
             return False
     if (is_linked(all[0], all[1], hor_links, ver_links) and is_linked(all[2], all[3], hor_links, ver_links)) and (
-                is_linked(all[0], all[2], hor_links, ver_links) and is_linked(all[1], all[3], hor_links, ver_links)):
+            is_linked(all[0], all[2], hor_links, ver_links) and is_linked(all[1], all[3], hor_links, ver_links)):
         return True
     else:
         return False
 
-#checks if the given points are joined and returns a list of topmost left points of the box created .
+
+# checks if the given points are joined and returns a list of topmost left points of the box created .
 # if no box is formed, returns [].
-#raises error if the points cannot be joined !
+# raises error if the points cannot be joined !
 def create_link(pos1, pos2, hor_links, ver_links):
     e = Exception("Error")
     if is_linked(pos1, pos2, hor_links, ver_links):
@@ -209,8 +217,9 @@ def create_link(pos1, pos2, hor_links, ver_links):
     else:
         raise e
 
-#removes a link from the given points by making the joining index False in the hor_links or ver_links
-#does nothing if the link is absent
+
+# removes a link from the given points by making the joining index False in the hor_links or ver_links
+# does nothing if the link is absent
 def remove_link(pos1, pos2, hor_links, ver_links):
     e = Exception("Error")
     if pos1 > pos2:
@@ -224,7 +233,8 @@ def remove_link(pos1, pos2, hor_links, ver_links):
     else:
         raise e
 
-#receives the corner(left topmost point of the box) value and changes its ownership to player name
+
+# receives the corner(left topmost point of the box) value and changes its ownership to player name
 def change_owner(corner, owners, player):
     if corner != []:
         owners[corner - ((corner + 1) // (n + 1))] = player
@@ -232,7 +242,8 @@ def change_owner(corner, owners, player):
     else:
         return False
 
-#reverses the current player
+
+# reverses the current player
 def change_player():
     global player
     if player == player1:
@@ -240,9 +251,10 @@ def change_player():
     else:
         player = player1
 
-#---------------------------------------------------Function definition for Computer player----------------------------------------
 
-#joins every links and checks if a box is created, if not : Deletes the link , else: Keeps it
+# ---------------------------------------------------Function definition for Computer player----------------------------------------
+
+# joins every links and checks if a box is created, if not : Deletes the link , else: Keeps it
 def comp_complete_box(virtual_hor_links, virtual_ver_links):
     link_joined = []
     box_count = 0
@@ -267,7 +279,8 @@ def comp_complete_box(virtual_hor_links, virtual_ver_links):
             pass
     return link_joined, box_count, virtual_hor_links, virtual_ver_links
 
-#calls the comp_complete_box untill the is a slightest chance of gaining a box
+
+# calls the comp_complete_box untill the is a slightest chance of gaining a box
 def comp_try_box(hor_links, ver_links):
     virtual_hor_links = list(hor_links)
     virtual_ver_links = list(ver_links)
@@ -282,11 +295,12 @@ def comp_try_box(hor_links, ver_links):
             break
     return link_joined, box_count, virtual_hor_links, virtual_ver_links
 
-#final Turns generater!
-#comes into play when all chances of gaining a box is gone!
-#joins all not joined lines one by one and counts the posibility of gaining a box by the oppernent, then remove the joining
-#the least box gaining possibility is selected
-#takes a random chance from the least possibilities and appends to the link_joined list ,hence generates the final turn chances
+
+# final Turns generater!
+# comes into play when all chances of gaining a box is gone!
+# joins all not joined lines one by one and counts the posibility of gaining a box by the oppernent, then remove the joining
+# the least box gaining possibility is selected
+# takes a random chance from the least possibilities and appends to the link_joined list ,hence generates the final turn chances
 def get_comp_turns(link_joined, virtual_hor_links, virtual_ver_links):
     if (False not in virtual_hor_links) and (False not in virtual_ver_links):
         least_gainable_box_count = 0
@@ -324,15 +338,16 @@ def get_comp_turns(link_joined, virtual_hor_links, virtual_ver_links):
             virtual_ver_links[count] = False
         count += 1
 
-    if len(link_joined) >= 3 and least_gainable_box_count >= 2:#a special winning trick is special cases only!
+    if len(link_joined) >= 3 and least_gainable_box_count >= 2:  # a special winning trick is special cases only!
         del link_joined[-2]
         return link_joined
     else:
         if link_available != []:
-            link_joined.append(random.choice(link_available))#general case
+            link_joined.append(random.choice(link_available))  # general case
         return link_joined
 
-#calls the comp_try_box and get_comp_turns one by one and joins the links(returned from get_comp_turns) and changes the ownership!
+
+# calls the comp_try_box and get_comp_turns one by one and joins the links(returned from get_comp_turns) and changes the ownership!
 def comp_play(hor_links, ver_links):
     print("\nTurn for computer...")
     global owners, score2, dots
@@ -346,25 +361,25 @@ def comp_play(hor_links, ver_links):
             if flag:
                 print("\nComputer owns a score!")
                 score2 += len(box_id)
-        print("\nline created between", dots[turn[0]], "and", dots[turn[1]],'\n')
+        print("\nline created between", dots[turn[0]], "and", dots[turn[1]], '\n')
         if flag == False:
             break
         else:
             printer(hor_links, ver_links, owners)
     print("computer has completed its chance(s)!")
 
-#-------------------------------------------------------Final game structure---------------------------------------------------
+
+# -------------------------------------------------------Final game structure---------------------------------------------------
 
 def start_game():
-
     global score1, score2
     start_time = datetime.datetime.now()
-    while ' ' in owners:#Loop for game coninution
+    while ' ' in owners:  # Loop for game coninution
         print('\n')
-        printer(hor_links, ver_links, owners)#prints the boxes
+        printer(hor_links, ver_links, owners)  # prints the boxes
         print("\n")
         ok = 0
-        #Point input from user
+        # Point input from user
         point1 = input("Enter the first point for " + player + " : ")
         point2 = input("Enter the second point for " + player + " : ")
         try:
@@ -373,7 +388,7 @@ def start_game():
                 point2 = point2[0:len(point2) - 1]
         except:
             pass
-        dont_change = False#checks if the the player cotinues the game or the turn will be shifted to another
+        dont_change = False  # checks if the the player cotinues the game or the turn will be shifted to another
         while ok == 0:
             dont_change = False
             try:
@@ -381,10 +396,10 @@ def start_game():
                 pos2 = dots.index(point2)
                 box_id = create_link(pos1, pos2, hor_links, ver_links)
                 for corner in box_id:
-                    dont_change = change_owner(corner, owners, player)#Dont_change changes if box is created
+                    dont_change = change_owner(corner, owners, player)  # Dont_change changes if box is created
                 print("\nline created between " + point1 + " and " + point2)
                 ok = 1
-            #Checks Errors for wrong point input
+            # Checks Errors for wrong point input
             except RuntimeError:
                 print("\nThe given points are already joined!\n")
                 point1 = input("Enter the first point for " + player + " : ")
@@ -398,7 +413,7 @@ def start_game():
                 point1 = input("Enter the first point for " + player + " : ")
                 point2 = input("Enter the second point for " + player + " : ")
 
-        if dont_change:#if true the current player will continue the game
+        if dont_change:  # if true the current player will continue the game
             if player == 'P' or player == '1':
                 score1 += len(box_id)
             else:
@@ -407,16 +422,16 @@ def start_game():
             if " " not in owners:
                 break
         else:
-            if player2 == 'C':#checks if computer will play
+            if player2 == 'C':  # checks if computer will play
                 comp_play(hor_links, ver_links)
             else:
-                change_player()#changes the player
+                change_player()  # changes the player
 
-    #Actions after game is over
+    # Actions after game is over
     print("\nGame over!!\n")
     printer(hor_links, ver_links, owners)
     diff = score1 - score2
-    #prints the score difference and the owners name
+    # prints the score difference and the owners name
     if diff < 0:
         print("\nPlayer 2" + "(" + player2 + ")" + " has won the match with " + str(abs(diff)) + " points")
     elif diff > 0:
@@ -426,7 +441,8 @@ def start_game():
 
     end_time = datetime.datetime.now()
     print("\nGame Playing duration :", end=' ')
-    print((end_time-start_time))
-    exitId = input("\nPress Enter to exit : ")#Pauses the script
+    print((end_time - start_time))
+    exitId = input("\nPress Enter to exit : ")  # Pauses the script
 
-start_game()#initiates the game
+
+start_game()  # initiates the game
